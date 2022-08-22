@@ -11,12 +11,7 @@ import Register from './components/Register/Register';
 import ParticlesContainer from './components/ParticlesContainer/ParticlesContainer';
 
 const initialState = {
-  box: {
-    leftCol: '',
-    topRow: '',
-    rightCol: '',
-    bottomRow: '',
-  },
+  boxes: [],
   user: {
     id: '',
     email: '',
@@ -30,12 +25,12 @@ function App() {
   const [imageUrl, setImageUrl] = useState('');
   const [route, setRoute] = useState('signin');
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [box, setBox] = useState(initialState.box);
+  const [boxes, setBoxes] = useState(initialState.boxes);
   const [user, setUser] = useState(initialState.user);
 
   const handleSignOut = () => {
     setUser(initialState.user);
-    setBox(initialState.box);
+    setBoxes(initialState.box);
     setRoute('signout');
     setIsSignedIn(false);
   };
@@ -45,21 +40,22 @@ function App() {
   };
 
   const calculateFaceLocation = (data) => {
-    const clarifaiFace =
-      data.outputs[0].data.regions[0].region_info.bounding_box;
-    const image = document.getElementById('inputimage');
-    const width = Number(image.width);
-    const height = Number(image.height);
-    return {
-      leftCol: clarifaiFace.left_col * width,
-      topRow: clarifaiFace.top_row * height,
-      rightCol: width - clarifaiFace.right_col * width,
-      bottomRow: height - clarifaiFace.bottom_row * height,
-    };
+    return data.outputs[0].data.regions.map((face) => {
+      const clarifaiFace = face.region_info.bounding_box;
+      const image = document.getElementById('inputimage');
+      const width = Number(image.width);
+      const height = Number(image.height);
+      return {
+        leftCol: clarifaiFace.left_col * width,
+        topRow: clarifaiFace.top_row * height,
+        rightCol: width - clarifaiFace.right_col * width,
+        bottomRow: height - clarifaiFace.bottom_row * height,
+      };
+    });
   };
 
-  const displayFaceBox = (data) => {
-    setBox(data);
+  const displayFaceBoxes = (boxes) => {
+    setBoxes(boxes);
   };
 
   const onInputChange = (event) => {
@@ -91,7 +87,7 @@ function App() {
             )
             .catch(console.log);
         }
-        displayFaceBox(calculateFaceLocation(res));
+        displayFaceBoxes(calculateFaceLocation(res));
       })
       .catch((err) => console.log(err));
   };
@@ -112,7 +108,7 @@ function App() {
             onInputChange={onInputChange}
             onButtonSubmit={onButtonSubmit}
           />
-          <FaceRecognition box={box} imageUrl={imageUrl} />
+          <FaceRecognition boxes={boxes} imageUrl={imageUrl} />
         </>
       ) : route === 'signin' ? (
         <Signin
