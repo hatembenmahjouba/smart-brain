@@ -16,6 +16,10 @@ const Register = ({ onRouteChange, loadUser, onIsSignInChange }) => {
     setName(event.target.value);
   };
 
+  const saveAuthTokenInSession = (token) => {
+    window.sessionStorage.setItem('token', token);
+  };
+
   const onSubmitRegister = () => {
     fetch(`${process.env.REACT_APP_API_URL}register`, {
       method: 'post',
@@ -27,11 +31,25 @@ const Register = ({ onRouteChange, loadUser, onIsSignInChange }) => {
       }),
     })
       .then((res) => res.json())
-      .then((user) => {
-        if (user.id) {
-          loadUser(user);
-          onRouteChange('home');
-          onIsSignInChange(true);
+      .then((data) => {
+        if (data.userId && data.success === 'true') {
+          saveAuthTokenInSession(data.token);
+          if (data && data.userId) {
+            fetch(`${process.env.REACT_APP_API_URL}profile/${data.userId}`, {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: data.token,
+              },
+            })
+              .then((resp) => resp.json())
+              .then((user) => {
+                if (user && user.email) {
+                  loadUser(user);
+                  onRouteChange('home');
+                  onIsSignInChange(true);
+                }
+              });
+          }
         }
       });
   };
@@ -47,7 +65,7 @@ const Register = ({ onRouteChange, loadUser, onIsSignInChange }) => {
                 Name
               </label>
               <input
-                className='pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100'
+                className='pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100 hover-black'
                 type='text'
                 name='name'
                 id='name'
@@ -59,7 +77,7 @@ const Register = ({ onRouteChange, loadUser, onIsSignInChange }) => {
                 Email
               </label>
               <input
-                className='pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100'
+                className='pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100 hover-black'
                 type='email'
                 name='email-address'
                 id='email-address'
@@ -71,7 +89,7 @@ const Register = ({ onRouteChange, loadUser, onIsSignInChange }) => {
                 Password
               </label>
               <input
-                className='b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100'
+                className='b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100 hover-black'
                 type='password'
                 name='password'
                 id='password'

@@ -16,3 +16,7 @@ button, input {
   border: 0;
   outline: none;
 }
+
+.hover-black:hover,.hover-black:focus {
+  background-color: #000 !important;
+}

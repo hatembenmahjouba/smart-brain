@@ -12,7 +12,8 @@ const FaceRecognition = ({ imageUrl, boxes }) => {
           width='500px'
           height='auto'
         />
-        {boxes.length > 0 &&
+        {boxes &&
+          boxes.length > 0 &&
           boxes.map((box, index) => (
             <div
               key={index}
